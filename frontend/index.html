@@ -1,0 +1,3417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Timetable Automation System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --primary-light: #5dade2;
+            --secondary: #2c3e50;
+            --accent: #1abc9c;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #f8f9fa;
+            --dark: #2c3e50;
+            --text: #333;
+            --card-bg: #ffffff;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --border: 1px solid #e0e0e0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: var(--secondary);
+            color: white;
+            padding: 15px 0;
+            box-shadow: var(--shadow);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo i {
+            color: var(--accent);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .nav-links a:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        /* Auth Container Styles */
+        .auth-container {
+            max-width: 450px;
+            margin: 50px auto;
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            border: var(--border);
+        }
+        
+        .auth-tabs {
+            display: flex;
+            border-bottom: var(--border);
+        }
+        
+        .auth-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .auth-tab.active {
+            background-color: transparent;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .auth-form {
+            padding: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: var(--border);
+            border-radius: 4px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background: var(--primary-light);
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        
+        .forgot-password {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .forgot-password a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        /* Dashboard Styles */
+        .dashboard {
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            border: var(--border);
+        }
+        
+        .dashboard-title {
+            font-size: 24px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .dashboard-title i {
+            color: var(--primary);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            transition: all 0.3s;
+            border: var(--border);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-content {
+            margin-bottom: 15px;
+            color: #555;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+        }
+        
+        .btn-success {
+            background: var(--success);
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+        }
+        
+        .btn-warning {
+            background: var(--warning);
+        }
+        
+        /* Table Styles */
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 30px;
+            border: var(--border);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: var(--border);
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        tr:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+        
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-left-color: var(--success);
+        }
+        
+        .notification.error {
+            border-left-color: var(--danger);
+        }
+        
+        .notification.info {
+            border-left-color: var(--accent);
+        }
+        
+        .notification-icon {
+            font-size: 20px;
+        }
+        
+        .notification.success .notification-icon {
+            color: var(--success);
+        }
+        
+        .notification.error .notification-icon {
+            color: var(--danger);
+        }
+        
+        .notification.info .notification-icon {
+            color: var(--accent);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            transform: translateY(-20px);
+            transition: transform 0.3s;
+        }
+        
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: var(--border);
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            color: var(--dark);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s;
+        }
+        
+        .close-modal:hover {
+            color: var(--danger);
+        }
+        
+        /* Conflict Report Styles */
+        .conflict-report {
+            background: rgba(231, 76, 60, 0.05);
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 4px solid var(--danger);
+        }
+        
+        .conflict-item {
+            padding: 10px;
+            border-bottom: 1px solid rgba(231, 76, 60, 0.1);
+        }
+        
+        .conflict-item:last-child {
+            border-bottom: none;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+        
+        /* Footer Styles */
+        footer {
+            background: var(--secondary);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 50px;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Timetable Status */
+        .timetable-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 15px;
+        }
+        
+        .status-pending {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--warning);
+        }
+        
+        .status-approved {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success);
+        }
+        
+        .status-conflict {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger);
+        }
+        
+        /* Page Styles */
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            border: var(--border);
+        }
+        
+        .page-title {
+            font-size: 24px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .page-title i {
+            color: var(--primary);
+        }
+        
+        .back-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        /* Conflict Resolution Styles */
+        .conflict-resolution {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .conflict-list {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: var(--shadow);
+            border: var(--border);
+        }
+        
+        .resolution-options {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: var(--shadow);
+            border: var(--border);
+        }
+        
+        .conflict-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            background: #f8f9fa;
+            border-left: 4px solid var(--danger);
+        }
+        
+        .resolution-option {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .resolution-option:hover {
+            background: #e9ecef;
+        }
+        
+        /* Timetable View Styles */
+        .timetable-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .view-options {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .view-option {
+            padding: 8px 15px;
+            background: white;
+            border: var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .view-option.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Data Upload Styles */
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(52, 152, 219, 0.05);
+        }
+        
+        .upload-area.active {
+            border-color: var(--primary);
+            background: rgba(52, 152, 219, 0.1);
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            color: #ccc;
+            margin-bottom: 15px;
+        }
+        
+        .upload-area.active .upload-icon {
+            color: var(--primary);
+        }
+        
+        .uploaded-files {
+            margin-top: 20px;
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .file-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .file-action {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--primary);
+            font-size: 16px;
+        }
+        
+        .file-action.delete {
+            color: var(--danger);
+        }
+        
+        /* Data Preview Styles */
+        .data-preview {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .preview-table th, .preview-table td {
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .preview-table th {
+            background: #f5f5f5;
+        }
+        
+        /* Contact Info Styles */
+        .contact-info {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: var(--border);
+            margin-top: 20px;
+        }
+        
+        .contact-info h3 {
+            margin-bottom: 15px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .contact-details {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .contact-item i {
+            color: var(--primary);
+            width: 20px;
+        }
+        
+        /* Issue Report Styles */
+        .issue-form {
+            margin-top: 20px;
+        }
+        
+        .announcement-list {
+            margin-top: 20px;
+        }
+        
+        .announcement-item {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .announcement-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+        
+        .announcement-meta {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .issue-item {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .issue-meta {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .issue-user {
+            font-weight: 600;
+        }
+        
+        /* College Logo Styles */
+        .college-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-top: 20px;
+        }
+        
+        .logo-placeholder {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-bottom: 10px;
+            border: 3px solid var(--secondary);
+            overflow: hidden;
+        }
+        
+        .logo-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .college-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--secondary);
+            text-align: center;
+        }
+
+        /* Data Status Styles */
+        .data-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .status-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: var(--border);
+        }
+        
+        .status-count {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .status-label {
+            font-size: 14px;
+            color: var(--dark);
+        }
+        
+        .status-item.warning {
+            border-left: 4px solid var(--warning);
+        }
+        
+        .status-item.success {
+            border-left: 4px solid var(--success);
+        }
+        
+        /* Lab Batch Styles */
+        .lab-batch-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            padding: 3px 6px;
+            background: rgba(26, 188, 156, 0.1);
+            border-radius: 3px;
+            display: inline-block;
+        }
+        
+        .batch-highlight {
+            background-color: rgba(52, 152, 219, 0.1);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header id="main-header" class="hidden">
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fas fa-calendar-alt"></i>
+                TimetablePro
+            </div>
+            <div class="nav-links">
+                <a href="#" id="home-link"><i class="fas fa-home"></i> Home</a>
+                <a href="#" id="contact-link"><i class="fas fa-envelope"></i> Contact</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Login/Signup Container -->
+        <div id="auth-container" class="auth-container">
+            <div class="college-logo">
+                <div class="logo-placeholder">
+                    <img src="https://tse3.mm.bing.net/th/id/OIP.1iyuiKdW-b_lxlj9y_dvwQHaHa?pid=Api&P=0&h=220" alt="SJB Institute of Technology Logo">
+                </div>
+                <div class="college-name">SJB INSTITUTE OF TECHNOLOGY</div>
+            </div>
+            
+            <div class="auth-tabs">
+                <div class="auth-tab active" id="login-tab">Login</div>
+                <div class="auth-tab" id="signup-tab">Sign Up</div>
+            </div>
+            
+            <!-- Login Form -->
+            <div id="login-form" class="auth-form">
+                <div class="form-group">
+                    <label for="login-username"><i class="fas fa-user"></i> Username</label>
+                    <input type="text" id="login-username" placeholder="Enter your username (USN/FAC/TTC)">
+                </div>
+                <div class="form-group">
+                    <label for="login-password"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="login-password" placeholder="Enter your password">
+                </div>
+                <button class="btn btn-block" id="login-btn">Login</button>
+                <div class="forgot-password">
+                    <a href="#" id="forgot-password-link"><i class="fas fa-key"></i> Forgot Password?</a>
+                </div>
+            </div>
+            
+            <!-- Signup Form -->
+            <div id="signup-form" class="auth-form hidden">
+                <div class="form-group">
+                    <label for="signup-username"><i class="fas fa-user"></i> Username</label>
+                    <input type="text" id="signup-username" placeholder="Choose a username (USN/FAC/TTC)">
+                </div>
+                <div class="form-group">
+                    <label for="signup-email"><i class="fas fa-envelope"></i> Email Address</label>
+                    <input type="email" id="signup-email" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="signup-password"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="signup-password" placeholder="Create a password">
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password"><i class="fas fa-lock"></i> Confirm Password</label>
+                    <input type="password" id="confirm-password" placeholder="Confirm your password">
+                </div>
+                <button class="btn btn-block" id="signup-btn">Sign Up</button>
+            </div>
+        </div>
+        
+        <!-- Student Dashboard -->
+        <div id="student-dashboard" class="dashboard hidden">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">
+                    <i class="fas fa-graduation-cap"></i> Student Dashboard
+                </h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="student-avatar">S</div>
+                    <div>
+                        <div>Welcome, <span id="student-name">Student</span></div>
+                        <div style="font-size: 14px; color: #666;" id="student-program">Computer Science</div>
+                    </div>
+                    <button class="btn btn-secondary" id="student-logout">Logout</button>
+                </div>
+            </div>
+            
+            <div class="dashboard-cards">
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-table"></i> View Timetable</h3>
+                    <div class="card-content">
+                        <p>Access your class schedule for the current semester with real-time updates.</p>
+                        <div class="form-group">
+                            <label for="student-sem">Semester</label>
+                            <select id="student-sem">
+                                <option value="1">1st Semester</option>
+                                <option value="2">2nd Semester</option>
+                                <option value="3">3rd Semester</option>
+                                <option value="4">4th Semester</option>
+                                <option value="5">5th Semester</option>
+                                <option value="6">6th Semester</option>
+                                <option value="7">7th Semester</option>
+                                <option value="8">8th Semester</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="student-section">Section</label>
+                            <select id="student-section">
+                                <option value="A">Section A</option>
+                                <option value="B">Section B</option>
+                                <option value="C">Section C</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" id="student-view-timetable">View Timetable</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-download"></i> Download Timetable</h3>
+                    <div class="card-content">
+                        <p>Download your timetable in PDF format for offline access and printing.</p>
+                        <div class="form-group">
+                            <label for="student-download-sem">Semester</label>
+                            <select id="student-download-sem">
+                                <option value="1">1st Semester</option>
+                                <option value="2">2nd Semester</option>
+                                <option value="3">3rd Semester</option>
+                                <option value="4">4th Semester</option>
+                                <option value="5">5th Semester</option>
+                                <option value="6">6th Semester</option>
+                                <option value="7">7th Semester</option>
+                                <option value="8">8th Semester</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="student-download-section">Section</label>
+                            <select id="student-download-section">
+                                <option value="A">Section A</option>
+                                <option value="B">Section B</option>
+                                <option value="C">Section C</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-success" id="student-download-timetable">Download</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-bell"></i> Notifications & Issues</h3>
+                    <div class="card-content">
+                        <p>Check announcements and report any timetable issues or conflicts.</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-warning" id="student-notifications">View Notifications</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Student Timetable View (Initially Hidden) -->
+            <div id="student-timetable-view" class="hidden">
+                <div class="page-header">
+                    <h2><i class="fas fa-table"></i> Student Timetable</h2>
+                    <button class="back-btn" id="student-back-to-dashboard">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table id="student-timetable">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Monday</th>
+                                <th>Tuesday</th>
+                                <th>Wednesday</th>
+                                <th>Thursday</th>
+                                <th>Friday</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Timetable data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Student Notifications View (Initially Hidden) -->
+            <div id="student-notifications-view" class="page hidden">
+                <div class="page-header">
+                    <h2><i class="fas fa-bell"></i> Notifications & Issues</h2>
+                    <button class="back-btn" id="student-back-to-dashboard-from-notifications">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-bullhorn"></i> Announcements</h3>
+                    <div class="announcement-list" id="student-announcement-list">
+                        <!-- Announcements will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Report an Issue</h3>
+                    <div class="issue-form">
+                        <div class="form-group">
+                            <label for="student-issue-title">Issue Title</label>
+                            <input type="text" id="student-issue-title" placeholder="Brief description of the issue">
+                        </div>
+                        <div class="form-group">
+                            <label for="student-issue-description">Issue Description</label>
+                            <textarea id="student-issue-description" rows="4" placeholder="Describe the issue in detail"></textarea>
+                        </div>
+                        <button class="btn btn-warning" id="student-submit-issue">Submit Issue</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Faculty Dashboard -->
+        <div id="faculty-dashboard" class="dashboard hidden">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">
+                    <i class="fas fa-chalkboard-teacher"></i> Faculty Dashboard
+                </h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="faculty-avatar">F</div>
+                    <div>
+                        <div>Welcome, <span id="faculty-name">Faculty Member</span></div>
+                        <div style="font-size: 14px; color: #666;" id="faculty-department">Department of Computer Science</div>
+                    </div>
+                    <button class="btn btn-secondary" id="faculty-logout">Logout</button>
+                </div>
+            </div>
+            
+            <div class="dashboard-cards">
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-table"></i> View Teaching Schedule</h3>
+                    <div class="card-content">
+                        <p>View your teaching schedule for the current semester with room assignments.</p>
+                        <div class="form-group">
+                            <label for="faculty-sem">Semester</label>
+                            <select id="faculty-sem">
+                                <option value="1">1st Semester</option>
+                                <option value="2">2nd Semester</option>
+                                <option value="3">3rd Semester</option>
+                                <option value="4">4th Semester</option>
+                                <option value="5">5th Semester</option>
+                                <option value="6">6th Semester</option>
+                                <option value="7">7th Semester</option>
+                                <option value="8">8th Semester</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" id="faculty-view-timetable">View Schedule</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-table"></i> View Student Timetable</h3>
+                    <div class="card-content">
+                        <p>View student timetables to understand their schedule and availability.</p>
+                        <div class="form-group">
+                            <label for="faculty-student-sem">Semester</label>
+                            <select id="faculty-student-sem">
+                                <option value="1">1st Semester</option>
+                                <option value="2">2nd Semester</option>
+                                <option value="3">3rd Semester</option>
+                                <option value="4">4th Semester</option>
+                                <option value="5">5th Semester</option>
+                                <option value="6">6th Semester</option>
+                                <option value="7">7th Semester</option>
+                                <option value="8">8th Semester</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="faculty-student-section">Section</label>
+                            <select id="faculty-student-section">
+                                <option value="A">Section A</option>
+                                <option value="B">Section B</option>
+                                <option value="C">Section C</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" id="faculty-view-student-timetable">View Student Timetable</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-download"></i> Download Schedule</h3>
+                    <div class="card-content">
+                        <p>Download your teaching schedule in PDF format for your records.</p>
+                        <div class="form-group">
+                            <label for="faculty-download-sem">Semester</label>
+                            <select id="faculty-download-sem">
+                                <option value="1">1st Semester</option>
+                                <option value="2">2nd Semester</option>
+                                <option value="3">3rd Semester</option>
+                                <option value="4">4th Semester</option>
+                                <option value="5">5th Semester</option>
+                                <option value="6">6th Semester</option>
+                                <option value="7">7th Semester</option>
+                                <option value="8">8th Semester</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-success" id="faculty-download-timetable">Download</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-bell"></i> Notifications & Issues</h3>
+                    <div class="card-content">
+                        <p>Check announcements and report any timetable issues or conflicts.</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-warning" id="faculty-notifications">View Notifications</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Faculty Pages -->
+        
+        <!-- Faculty Timetable Page -->
+        <div id="faculty-timetable-page" class="page hidden">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-table"></i> Faculty Teaching Schedule
+                </h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="faculty-timetable-avatar">F</div>
+                    <div>
+                        <div>Welcome, <span id="faculty-timetable-name">Faculty Member</span></div>
+                        <div style="font-size: 14px; color: #666;" id="faculty-timetable-department">Department of Computer Science</div>
+                    </div>
+                    <button class="btn btn-secondary" id="faculty-timetable-back">Back to Dashboard</button>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table id="faculty-timetable">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Monday</th>
+                            <th>Tuesday</th>
+                            <th>Wednesday</th>
+                            <th>Thursday</th>
+                            <th>Friday</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Timetable data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Faculty Student Timetable Page -->
+        <div id="faculty-student-timetable-page" class="page hidden">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-table"></i> Student Timetable
+                </h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="faculty-student-timetable-avatar">F</div>
+                    <div>
+                        <div>Welcome, <span id="faculty-student-timetable-name">Faculty Member</span></div>
+                        <div style="font-size: 14px; color: #666;" id="faculty-student-timetable-department">Department of Computer Science</div>
+                    </div>
+                    <button class="btn btn-secondary" id="faculty-student-timetable-back">Back to Dashboard</button>
+                </div>
+            </div>
+            
+            <div class="card-actions" style="margin-bottom: 20px;">
+                <button class="btn btn-success" id="faculty-download-student-timetable">Download Student Timetable</button>
+            </div>
+            
+            <div class="table-container">
+                <table id="faculty-student-timetable">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Monday</th>
+                            <th>Tuesday</th>
+                            <th>Wednesday</th>
+                            <th>Thursday</th>
+                            <th>Friday</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Timetable data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Faculty Notifications Page -->
+        <div id="faculty-notifications-page" class="page hidden">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-bell"></i> Notifications & Issues
+                </h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="faculty-notifications-avatar">F</div>
+                    <div>
+                        <div>Welcome, <span id="faculty-notifications-name">Faculty Member</span></div>
+                        <div style="font-size: 14px; color: #666;" id="faculty-notifications-department">Department of Computer Science</div>
+                    </div>
+                    <button class="btn btn-secondary" id="faculty-notifications-back">Back to Dashboard</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title"><i class="fas fa-bullhorn"></i> Announcements</h3>
+                <div class="announcement-list" id="faculty-announcement-list">
+                    <!-- Announcements will be populated here -->
+                </div>
+            </div>
+            
+            <div class="card" style="margin-top: 20px;">
+                <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Report an Issue</h3>
+                <div class="issue-form">
+                    <div class="form-group">
+                        <label for="faculty-issue-title">Issue Title</label>
+                        <input type="text" id="faculty-issue-title" placeholder="Brief description of the issue">
+                    </div>
+                    <div class="form-group">
+                        <label for="faculty-issue-description">Issue Description</label>
+                        <textarea id="faculty-issue-description" rows="4" placeholder="Describe the issue in detail"></textarea>
+                    </div>
+                    <button class="btn btn-warning" id="faculty-submit-issue">Submit Issue</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Faculty Download Page -->
+        <div id="faculty-download-page" class="page hidden">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-download"></i> Download Schedule
+                </h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="faculty-download-avatar">F</div>
+                    <div>
+                        <div>Welcome, <span id="faculty-download-name">Faculty Member</span></div>
+                        <div style="font-size: 14px; color: #666;" id="faculty-download-department">Department of Computer Science</div>
+                    </div>
+                    <button class="btn btn-secondary" id="faculty-download-back">Back to Dashboard</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title"><i class="fas fa-file-pdf"></i> Download Options</h3>
+                <div class="card-content">
+                    <p>Select the format and options for downloading your teaching schedule:</p>
+                    <div class="form-group">
+                        <label for="download-format">Format</label>
+                        <select id="download-format">
+                            <option value="pdf">PDF Document</option>
+                            <option value="excel">Excel Spreadsheet</option>
+                            <option value="csv">CSV File</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="include-details">
+                            <input type="checkbox" id="include-details" checked>
+                            Include room and faculty details
+                        </label>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-success" id="faculty-download-confirm">Download Now</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Coordinator Dashboard -->
+        <div id="coordinator-dashboard" class="dashboard hidden">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">
+                    <i class="fas fa-tasks"></i> Timetable Coordinator Dashboard
+                    <span class="timetable-status status-pending" id="timetable-status">Pending</span>
+                </h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="coordinator-avatar">C</div>
+                    <div>
+                        <div>Welcome, <span id="coordinator-name">Coordinator</span></div>
+                        <div style="font-size: 14px; color: #666;">Timetable Management</div>
+                    </div>
+                    <button class="btn btn-secondary" id="coordinator-logout">Logout</button>
+                </div>
+            </div>
+            
+            <!-- Data Status Display -->
+            <div class="data-status" id="data-status-container">
+                <div class="status-item" id="subjects-status">
+                    <div class="status-count">0</div>
+                    <div class="status-label">Subjects</div>
+                </div>
+                <div class="status-item" id="faculty-status">
+                    <div class="status-count">0</div>
+                    <div class="status-label">Faculty</div>
+                </div>
+                <div class="status-item" id="rooms-status">
+                    <div class="status-count">0</div>
+                    <div class="status-label">Rooms</div>
+                </div>
+                <div class="status-item" id="students-status">
+                    <div class="status-count">0</div>
+                    <div class="status-label">Students</div>
+                </div>
+            </div>
+            
+            <div class="dashboard-cards">
+                <!-- Upload Data Card -->
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-upload"></i> Upload Data</h3>
+                    <div class="card-content">
+                        <p>Upload subject, faculty, and room details to generate an optimized timetable for all semesters and sections.</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" id="coordinator-upload">Upload Data</button>
+                    </div>
+                </div>
+                
+                <!-- Generate Timetable Card -->
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-cogs"></i> Generate Timetable</h3>
+                    <div class="card-content">
+                        <p>Automatically generate an optimized timetable for all semesters and sections based on uploaded data.</p>
+                        <div id="generation-status" style="margin-top: 10px; font-size: 14px; color: #666;">
+                            No timetable generated yet
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-success" id="coordinator-generate">Generate Timetable</button>
+                    </div>
+                </div>
+                
+                <!-- Other coordinator cards remain the same -->
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-table"></i> View Timetable</h3>
+                    <div class="card-content">
+                        <p>View the complete institutional timetable with all classes and faculty assignments.</p>
+                        <div class="form-group">
+                            <label for="coordinator-view-sem">Semester</label>
+                            <select id="coordinator-view-sem">
+                                <option value="1">1st Semester</option>
+                                <option value="2">2nd Semester</option>
+                                <option value="3">3rd Semester</option>
+                                <option value="4">4th Semester</option>
+                                <option value="5">5th Semester</option>
+                                <option value="6">6th Semester</option>
+                                <option value="7">7th Semester</option>
+                                <option value="8">8th Semester</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="coordinator-view-section">Section</label>
+                            <select id="coordinator-view-section">
+                                <option value="A">Section A</option>
+                                <option value="B">Section B</option>
+                                <option value="C">Section C</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" id="coordinator-view-timetable">View Timetable</button>
+                    </div>
+                </div>
+                               
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Check Conflicts & Issues</h3>
+                    <div class="card-content">
+                        <p>Check for any scheduling conflicts and user-reported issues.</p>
+                        <div class="form-group">
+                            <label for="coordinator-conflict-sem">Semester</label>
+                            <select id="coordinator-conflict-sem">
+                                <option value="1">1st Semester</option>
+                                <option value="2">2nd Semester</option>
+                                <option value="3">3rd Semester</option>
+                                <option value="4">4th Semester</option>
+                                <option value="5">5th Semester</option>
+                                <option value="6">6th Semester</option>
+                                <option value="7">7th Semester</option>
+                                <option value="8">8th Semester</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="coordinator-conflict-section">Section</label>
+                            <select id="coordinator-conflict-section">
+                                <option value="A">Section A</option>
+                                <option value="B">Section B</option>
+                                <option value="C">Section C</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-warning" id="coordinator-check-conflicts">Check Conflicts & Issues</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-edit"></i> Modify Timetable</h3>
+                    <div class="card-content">
+                        <p>Make manual adjustments to the timetable to resolve any issues.</p>
+                        <div class="form-group">
+                            <label for="coordinator-modify-sem">Semester</label>
+                            <select id="coordinator-modify-sem">
+                                <option value="1">1st Semester</option>
+                                <option value="2">2nd Semester</option>
+                                <option value="3">3rd Semester</option>
+                                <option value="4">4th Semester</option>
+                                <option value="5">5th Semester</option>
+                                <option value="6">6th Semester</option>
+                                <option value="7">7th Semester</option>
+                                <option value="8">8th Semester</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="coordinator-modify-section">Section</label>
+                            <select id="coordinator-modify-section">
+                                <option value="A">Section A</option>
+                                <option value="B">Section B</option>
+                                <option value="C">Section C</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-warning" id="coordinator-modify">Modify Timetable</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-bullhorn"></i> Send Announcements</h3>
+                    <div class="card-content">
+                        <p>Send notifications to students and faculty about timetable changes.</p>
+                        <div class="form-group">
+                            <label for="coordinator-announce-sem">Semester</label>
+                            <select id="coordinator-announce-sem">
+                                <option value="1">1st Semester</option>
+                                <option value="2">2nd Semester</option>
+                                <option value="3">3rd Semester</option>
+                                <option value="4">4th Semester</option>
+                                <option value="5">5th Semester</option>
+                                <option value="6">6th Semester</option>
+                                <option value="7">7th Semester</option>
+                                <option value="8">8th Semester</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="coordinator-announce-section">Section</label>
+                            <select id="coordinator-announce-section">
+                                <option value="A">Section A</option>
+                                <option value="B">Section B</option>
+                                <option value="C">Section C</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-success" id="coordinator-announce">Send Announcement</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-user-tie"></i> Update Contact Details</h3>
+                    <div class="card-content">
+                        <p>Update your contact information that will be shown to students and faculty.</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" id="coordinator-update-contact">Update Contact</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Coordinator Pages -->
+        
+        <!-- Coordinator Upload Data Page -->
+        <div id="coordinator-upload-page" class="page hidden">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-upload"></i> Upload Timetable Data
+                </h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="coordinator-upload-avatar">C</div>
+                    <div>
+                        <div>Welcome, <span id="coordinator-upload-name">Coordinator</span></div>
+                        <div style="font-size: 14px; color: #666;">Timetable Management</div>
+                    </div>
+                    <button class="btn btn-secondary" id="coordinator-upload-back">Back to Dashboard</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title"><i class="fas fa-file-upload"></i> Upload Files</h3>
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h3>Drag & Drop Files Here</h3>
+                    <p>or</p>
+                    <button class="btn btn-primary" id="browse-files">Browse Files</button>
+                    <input type="file" id="file-input" multiple style="display: none;" accept=".csv">
+                </div>
+                <div class="uploaded-files" id="uploaded-files">
+                    <!-- Uploaded files will be listed here -->
+                </div>
+            </div>
+            <div class="card" style="margin-top: 20px;">
+                <h3 class="card-title"><i class="fas fa-info-circle"></i> Data Requirements</h3>
+                <div class="card-content">
+                    <p>Please upload CSV files with the following structure:</p>
+                    <ul>
+                        <li><strong>Subjects:</strong> SubjectID, SubjectName, Credits, FacultyID, Semester, Section, Type (Theory/Lab)</li>
+                        <li><strong>Faculty:</strong> FacultyID, Name, Department, Availability</li>
+                        <li><strong>Rooms:</strong> RoomID, RoomName, Capacity, Type (Classroom/Lab)</li>
+                        <li><strong>Students:</strong> StudentID, Name, Program, Semester, Section</li>
+                    </ul>
+                    <p><strong>Note:</strong> Upload data for all semesters and sections in a single file.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Coordinator Timetable Page -->
+        <div id="coordinator-timetable-page" class="page hidden">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-table"></i> Institutional Timetable
+                    <span class="timetable-status status-pending" id="coordinator-timetable-status">Pending</span>
+                </h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="coordinator-timetable-avatar">C</div>
+                    <div>
+                        <div>Welcome, <span id="coordinator-timetable-name">Coordinator</span></div>
+                        <div style="font-size: 14px; color: #666;">Timetable Management</div>
+                    </div>
+                    <button class="btn btn-secondary" id="coordinator-timetable-back">Back to Dashboard</button>
+                </div>
+            </div>
+            
+            <div class="timetable-controls">
+                <div class="view-options">
+                    <div class="view-option active" data-view="faculty">Faculty View</div>
+                    <div class="view-option" data-view="students">Student View</div>
+                </div>
+                <button class="btn btn-primary" id="coordinator-export-timetable">Export Timetable</button>
+            </div>
+            <div class="table-container">
+                <table id="coordinator-timetable">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Monday</th>
+                            <th>Tuesday</th>
+                            <th>Wednesday</th>
+                            <th>Thursday</th>
+                            <th>Friday</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Timetable data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Coordinator Conflict Resolution Page -->
+        <div id="coordinator-conflict-resolution-page" class="page hidden">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-exclamation-triangle"></i> Conflict & Issue Resolution
+                </h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="coordinator-conflict-avatar">C</div>
+                    <div>
+                        <div>Welcome, <span id="coordinator-conflict-name">Coordinator</span></div>
+                        <div style="font-size: 14px; color: #666;">Timetable Management</div>
+                    </div>
+                    <button class="btn btn-secondary" id="coordinator-conflict-back">Back to Dashboard</button>
+                </div>
+            </div>
+            
+            <div class="conflict-resolution">
+                <div class="conflict-list">
+                    <h3>Detected Conflicts</h3>
+                    <div id="conflict-list">
+                        <!-- Conflict items will be populated here -->
+                    </div>
+                </div>
+                <div class="resolution-options">
+                    <h3>User-Reported Issues</h3>
+                    <div id="user-issues-list">
+                        <!-- User issues will be populated here -->
+                    </div>
+                </div>
+            </div>
+            <div class="card-actions" style="margin-top: 20px;">
+                <button class="btn btn-success" id="apply-resolution">Apply Selected Resolution</button>
+                <button class="btn btn-warning" id="ignore-conflicts">Ignore Conflicts</button>
+            </div>
+        </div>
+        
+        <!-- Coordinator Timetable Generation Page -->
+        <div id="coordinator-generation-page" class="page hidden">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-cogs"></i> Generate Timetable
+                </h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="coordinator-generation-avatar">C</div>
+                    <div>
+                        <div>Welcome, <span id="coordinator-generation-name">Coordinator</span></div>
+                        <div style="font-size: 14px; color: #666;">Timetable Management</div>
+                    </div>
+                    <button class="btn btn-secondary" id="coordinator-generation-back">Back to Dashboard</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title"><i class="fas fa-sliders-h"></i> Generation Parameters</h3>
+                <div class="form-group">
+                    <label for="generation-priority">Optimization Priority</label>
+                    <select id="generation-priority">
+                        <option value="faculty">Faculty Preferences</option>
+                        <option value="rooms">Room Utilization</option>
+                        <option value="students">Student Schedule Balance</option>
+                        <option value="balanced">Balanced Approach</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="max-hours-per-day">Maximum Hours Per Day</label>
+                    <input type="number" id="max-hours-per-day" value="6" min="4" max="8">
+                </div>
+                <div class="form-group">
+                    <label for="break-duration">Break Duration (minutes)</label>
+                    <input type="number" id="break-duration" value="60" min="30" max="120">
+                </div>
+                <button class="btn btn-success btn-block" id="start-generation">Start Generation</button>
+            </div>
+            <div id="generation-progress" class="card hidden" style="margin-top: 20px;">
+                <h3 class="card-title"><i class="fas fa-spinner fa-spin"></i> Generating Timetable</h3>
+                <div class="card-content">
+                    <p>Please wait while the system generates an optimized timetable...</p>
+                    <div style="background: #f0f0f0; height: 20px; border-radius: 10px; margin-top: 10px; overflow: hidden;">
+                        <div id="progress-bar" style="background: var(--primary); height: 100%; width: 0%; transition: width 0.5s;"></div>
+                    </div>
+                    <p id="progress-text" style="text-align: center; margin-top: 10px;">0%</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Coordinator Timetable Modification Page -->
+        <div id="coordinator-modification-page" class="page hidden">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-edit"></i> Modify Timetable
+                </h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="coordinator-modification-avatar">C</div>
+                    <div>
+                        <div>Welcome, <span id="coordinator-modification-name">Coordinator</span></div>
+                        <div style="font-size: 14px; color: #666;">Timetable Management</div>
+                    </div>
+                    <button class="btn btn-secondary" id="coordinator-modification-back">Back to Dashboard</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title"><i class="fas fa-exchange-alt"></i> Make Changes</h3>
+                <div class="form-group">
+                    <label for="change-day">Day</label>
+                    <select id="change-day">
+                        <option value="monday">Monday</option>
+                        <option value="tuesday">Tuesday</option>
+                        <option value="wednesday">Wednesday</option>
+                        <option value="thursday">Thursday</option>
+                        <option value="friday">Friday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="change-time">Time Slot</label>
+                    <select id="change-time">
+                        <option value="8:30-9:30">8:30 - 9:30</option>
+                        <option value="9:30-10:30">9:30 - 10:30</option>
+                        <option value="10:30-10:45">10:30 - 10:45</option>
+                        <option value="10:45-11:45">10:45 - 11:45</option>
+                        <option value="11:45-12:45">11:45 - 12:45</option>
+                        <option value="12:45-1:30">12:45 - 1:30</option>
+                        <option value="1:30-2:30">1:30 - 2:30</option>
+                        <option value="2:30-3:30">2:30 - 3:30</option>
+                        <option value="3:30-4:30">3:30 - 4:30</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="change-class">Current Class</label>
+                    <input type="text" id="change-class" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="new-class">New Class</label>
+                    <input type="text" id="new-class" placeholder="Enter new class">
+                </div>
+                <div class="form-group">
+                    <label for="change-reason">Reason for Change</label>
+                    <textarea id="change-reason" rows="3" placeholder="Explain why this change is needed"></textarea>
+                </div>
+                <button class="btn btn-primary btn-block" id="apply-modification">Apply Change</button>
+            </div>
+            <div class="table-container" style="margin-top: 20px;">
+                <table id="modification-timetable">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Monday</th>
+                            <th>Tuesday</th>
+                            <th>Wednesday</th>
+                            <th>Thursday</th>
+                            <th>Friday</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Timetable data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Coordinator Announcements Page -->
+        <div id="coordinator-announcements-page" class="page hidden">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-bullhorn"></i> Send Announcements
+                </h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="coordinator-announcements-avatar">C</div>
+                    <div>
+                        <div>Welcome, <span id="coordinator-announcements-name">Coordinator</span></div>
+                        <div style="font-size: 14px; color: #666;">Timetable Management</div>
+                    </div>
+                    <button class="btn btn-secondary" id="coordinator-announcements-back">Back to Dashboard</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title"><i class="fas fa-edit"></i> Create Announcement</h3>
+                <div class="form-group">
+                    <label for="announcement-title">Title</label>
+                    <input type="text" id="announcement-title" placeholder="Enter announcement title">
+                </div>
+                <div class="form-group">
+                    <label for="announcement-message">Message</label>
+                    <textarea id="announcement-message" rows="5" placeholder="Enter announcement message"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="announcement-audience">Audience</label>
+                    <select id="announcement-audience">
+                        <option value="all">All Users</option>
+                        <option value="students">Students Only</option>
+                        <option value="faculty">Faculty Only</option>
+                    </select>
+                </div>
+                <button class="btn btn-success btn-block" id="send-announcement">Send Announcement</button>
+            </div>
+        </div>
+        
+        <!-- Coordinator Contact Update Page -->
+        <div id="coordinator-contact-page" class="page hidden">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-user-tie"></i> Update Contact Details
+                </h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="coordinator-contact-avatar">C</div>
+                    <div>
+                        <div>Welcome, <span id="coordinator-contact-name">Coordinator</span></div>
+                        <div style="font-size: 14px; color: #666;">Timetable Management</div>
+                    </div>
+                    <button class="btn btn-secondary" id="coordinator-contact-back">Back to Dashboard</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title"><i class="fas fa-edit"></i> Contact Information</h3>
+                <div class="form-group">
+                    <label for="coordinator-name-input">Name</label>
+                    <input type="text" id="coordinator-name-input" placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label for="coordinator-phone">Phone Number</label>
+                    <input type="text" id="coordinator-phone" placeholder="Enter your phone number">
+                </div>
+                <div class="form-group">
+                    <label for="coordinator-email">Email Address</label>
+                    <input type="email" id="coordinator-email" placeholder="Enter your email address">
+                </div>
+                <div class="form-group">
+                    <label for="coordinator-office">Office Location</label>
+                    <input type="text" id="coordinator-office" placeholder="Enter your office location">
+                </div>
+                <div class="form-group">
+                    <label for="coordinator-hours">Office Hours</label>
+                    <input type="text" id="coordinator-hours" placeholder="Enter your office hours">
+                </div>
+                <button class="btn btn-success btn-block" id="save-contact-details">Save Contact Details</button>
+            </div>
+        </div>
+        
+        <!-- Contact Information Page -->
+        <div id="contact-page" class="page hidden">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-envelope"></i> Contact Timetable Coordinator
+                </h1>
+                <button class="back-btn" id="contact-back">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div>
+            
+            <div class="contact-info">
+                <h3><i class="fas fa-user-tie"></i> Timetable Coordinator Details</h3>
+                <div class="contact-details" id="contact-details">
+                    <!-- Contact details will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer id="main-footer" class="hidden">
+        <div class="footer-content">
+            <p>&copy; 2023 TimetablePro - Class Timetable Automation System. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <div class="notification-icon">ℹ️</div>
+        <div class="notification-message">This is a notification</div>
+    </div>
+    
+    <!-- Forgot Password Modal -->
+    <div id="forgot-password-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-key"></i> Reset Password</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="reset-username">Username</label>
+                <input type="text" id="reset-username" placeholder="Enter your username">
+            </div>
+            <div class="form-group">
+                <label for="reset-email">Email</label>
+                <input type="email" id="reset-email" placeholder="Enter your email">
+            </div>
+            <button class="btn btn-block" id="reset-password-btn">Reset Password</button>
+        </div>
+    </div>
+
+    <script>
+        // Backend API Configuration
+        const API_BASE_URL = 'http://localhost:3000/api';
+
+        // Global variables
+        let currentUser = null;
+        let authToken = null;
+
+        // DOM Elements
+        const authContainer = document.getElementById('auth-container');
+        const loginTab = document.getElementById('login-tab');
+        const signupTab = document.getElementById('signup-tab');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const loginBtn = document.getElementById('login-btn');
+        const signupBtn = document.getElementById('signup-btn');
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
+        const forgotPasswordModal = document.getElementById('forgot-password-modal');
+        const resetPasswordBtn = document.getElementById('reset-password-btn');
+        const closeModalButtons = document.querySelectorAll('.close-modal');
+        const mainHeader = document.getElementById('main-header');
+        const mainFooter = document.getElementById('main-footer');
+        
+        const studentDashboard = document.getElementById('student-dashboard');
+        const facultyDashboard = document.getElementById('faculty-dashboard');
+        const coordinatorDashboard = document.getElementById('coordinator-dashboard');
+        
+        const studentLogout = document.getElementById('student-logout');
+        const facultyLogout = document.getElementById('faculty-logout');
+        const coordinatorLogout = document.getElementById('coordinator-logout');
+        
+        // Navigation elements
+        const homeLink = document.getElementById('home-link');
+        const contactLink = document.getElementById('contact-link');
+        const contactPage = document.getElementById('contact-page');
+        const contactBack = document.getElementById('contact-back');
+        const contactDetailsDiv = document.getElementById('contact-details');
+        
+        // Student elements
+        const studentViewTimetable = document.getElementById('student-view-timetable');
+        const studentDownloadTimetable = document.getElementById('student-download-timetable');
+        const studentNotifications = document.getElementById('student-notifications');
+        const studentTimetableView = document.getElementById('student-timetable-view');
+        const studentNotificationsView = document.getElementById('student-notifications-view');
+        const studentBackToDashboard = document.getElementById('student-back-to-dashboard');
+        const studentBackToDashboardFromNotifications = document.getElementById('student-back-to-dashboard-from-notifications');
+        const studentSubmitIssue = document.getElementById('student-submit-issue');
+        const studentAnnouncementList = document.getElementById('student-announcement-list');
+        
+        // Faculty elements
+        const facultyViewTimetable = document.getElementById('faculty-view-timetable');
+        const facultyViewStudentTimetable = document.getElementById('faculty-view-student-timetable');
+        const facultyDownloadTimetable = document.getElementById('faculty-download-timetable');
+        const facultyNotifications = document.getElementById('faculty-notifications');
+        const facultySubmitIssue = document.getElementById('faculty-submit-issue');
+        const facultyAnnouncementList = document.getElementById('faculty-announcement-list');
+        
+        // Faculty pages
+        const facultyTimetablePage = document.getElementById('faculty-timetable-page');
+        const facultyStudentTimetablePage = document.getElementById('faculty-student-timetable-page');
+        const facultyNotificationsPage = document.getElementById('faculty-notifications-page');
+        const facultyDownloadPage = document.getElementById('faculty-download-page');
+        
+        // Faculty page back buttons
+        const facultyTimetableBack = document.getElementById('faculty-timetable-back');
+        const facultyStudentTimetableBack = document.getElementById('faculty-student-timetable-back');
+        const facultyNotificationsBack = document.getElementById('faculty-notifications-back');
+        const facultyDownloadBack = document.getElementById('faculty-download-back');
+        
+        // Faculty download student timetable button
+        const facultyDownloadStudentTimetable = document.getElementById('faculty-download-student-timetable');
+        
+        // Coordinator elements
+        const coordinatorUpload = document.getElementById('coordinator-upload');
+        const coordinatorViewTimetable = document.getElementById('coordinator-view-timetable');
+        const coordinatorCheckConflicts = document.getElementById('coordinator-check-conflicts');
+        const coordinatorModify = document.getElementById('coordinator-modify');
+        const coordinatorAnnounce = document.getElementById('coordinator-announce');
+        const coordinatorGenerate = document.getElementById('coordinator-generate');
+        const coordinatorUpdateContact = document.getElementById('coordinator-update-contact');
+        
+        // Coordinator pages
+        const coordinatorUploadPage = document.getElementById('coordinator-upload-page');
+        const coordinatorTimetablePage = document.getElementById('coordinator-timetable-page');
+        const coordinatorConflictResolutionPage = document.getElementById('coordinator-conflict-resolution-page');
+        const coordinatorGenerationPage = document.getElementById('coordinator-generation-page');
+        const coordinatorModificationPage = document.getElementById('coordinator-modification-page');
+        const coordinatorAnnouncementsPage = document.getElementById('coordinator-announcements-page');
+        const coordinatorContactPage = document.getElementById('coordinator-contact-page');
+        
+        // Coordinator page back buttons
+        const coordinatorUploadBack = document.getElementById('coordinator-upload-back');
+        const coordinatorTimetableBack = document.getElementById('coordinator-timetable-back');
+        const coordinatorConflictBack = document.getElementById('coordinator-conflict-back');
+        const coordinatorGenerationBack = document.getElementById('coordinator-generation-back');
+        const coordinatorModificationBack = document.getElementById('coordinator-modification-back');
+        const coordinatorAnnouncementsBack = document.getElementById('coordinator-announcements-back');
+        const coordinatorContactBack = document.getElementById('coordinator-contact-back');
+        
+        // Coordinator other elements
+        const viewOptions = document.querySelectorAll('.view-option');
+        const coordinatorExportTimetable = document.getElementById('coordinator-export-timetable');
+        const conflictList = document.getElementById('conflict-list');
+        const userIssuesList = document.getElementById('user-issues-list');
+        const applyResolution = document.getElementById('apply-resolution');
+        const ignoreConflicts = document.getElementById('ignore-conflicts');
+        const startGeneration = document.getElementById('start-generation');
+        const generationProgress = document.getElementById('generation-progress');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const applyModification = document.getElementById('apply-modification');
+        const sendAnnouncement = document.getElementById('send-announcement');
+        const facultyDownloadConfirm = document.getElementById('faculty-download-confirm');
+        const saveContactDetails = document.getElementById('save-contact-details');
+        
+        // Upload elements
+        const uploadArea = document.getElementById('upload-area');
+        const browseFiles = document.getElementById('browse-files');
+        const fileInput = document.getElementById('file-input');
+        const uploadedFiles = document.getElementById('uploaded-files');
+        
+        const notification = document.getElementById('notification');
+        const timetableStatus = document.getElementById('timetable-status');
+        
+        // Data status elements
+        const subjectsStatus = document.getElementById('subjects-status');
+        const facultyStatus = document.getElementById('faculty-status');
+        const roomsStatus = document.getElementById('rooms-status');
+        const studentsStatus = document.getElementById('students-status');
+        const generationStatus = document.getElementById('generation-status');
+
+        // Event Listeners
+        loginTab.addEventListener('click', () => {
+            loginTab.classList.add('active');
+            signupTab.classList.remove('active');
+            loginForm.classList.remove('hidden');
+            signupForm.classList.add('hidden');
+        });
+
+        signupTab.addEventListener('click', () => {
+            signupTab.classList.add('active');
+            loginTab.classList.remove('active');
+            signupForm.classList.remove('hidden');
+            loginForm.classList.add('hidden');
+        });
+
+        loginBtn.addEventListener('click', handleLogin);
+        signupBtn.addEventListener('click', handleSignup);
+        forgotPasswordLink.addEventListener('click', () => {
+            forgotPasswordModal.classList.add('show');
+        });
+
+        resetPasswordBtn.addEventListener('click', () => {
+            showNotification('Password reset link has been sent to your email.', 'info');
+            forgotPasswordModal.classList.remove('show');
+        });
+
+        closeModalButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                button.closest('.modal').classList.remove('show');
+            });
+        });
+
+        // Navigation event listeners
+        homeLink.addEventListener('click', () => {
+            handleLogout();
+        });
+        
+        contactLink.addEventListener('click', () => {
+            if (currentUser) {
+                // Hide all dashboards and pages
+                document.querySelectorAll('.dashboard, .page').forEach(el => {
+                    el.classList.add('hidden');
+                    el.classList.remove('active');
+                });
+                contactPage.classList.remove('hidden');
+                contactPage.classList.add('active');
+                updateContactDetails();
+            } else {
+                showNotification('Please login first to view contact details.', 'info');
+            }
+        });
+        
+        contactBack.addEventListener('click', () => {
+            contactPage.classList.add('hidden');
+            contactPage.classList.remove('active');
+            if (currentUser) {
+                showDashboard(currentUser.userType);
+            }
+        });
+
+        studentLogout.addEventListener('click', handleLogout);
+        facultyLogout.addEventListener('click', handleLogout);
+        coordinatorLogout.addEventListener('click', handleLogout);
+
+        // Student event listeners
+        studentViewTimetable.addEventListener('click', () => {
+            const sem = document.getElementById('student-sem').value;
+            const section = document.getElementById('student-section').value;
+            document.querySelector('.dashboard-cards').classList.add('hidden');
+            studentTimetableView.classList.remove('hidden');
+            populateTimetable('student', 'student-timetable', sem, section);
+        });
+        
+        studentNotifications.addEventListener('click', () => {
+            document.querySelector('.dashboard-cards').classList.add('hidden');
+            studentNotificationsView.classList.remove('hidden');
+            updateStudentAnnouncements();
+        });
+        
+        studentBackToDashboard.addEventListener('click', () => {
+            document.querySelector('.dashboard-cards').classList.remove('hidden');
+            studentTimetableView.classList.add('hidden');
+        });
+        
+        studentBackToDashboardFromNotifications.addEventListener('click', () => {
+            document.querySelector('.dashboard-cards').classList.remove('hidden');
+            studentNotificationsView.classList.add('hidden');
+        });
+        
+        studentDownloadTimetable.addEventListener('click', () => {
+            const sem = document.getElementById('student-download-sem').value;
+            const section = document.getElementById('student-download-section').value;
+            downloadTimetablePDF('student', sem, section);
+        });
+        
+        studentSubmitIssue.addEventListener('click', async () => {
+            const title = document.getElementById('student-issue-title').value;
+            const description = document.getElementById('student-issue-description').value;
+            
+            if (!title || !description) {
+                showNotification('Please fill in both title and description.', 'error');
+                return;
+            }
+            
+            try {
+                await apiCall('/issues', {
+                    method: 'POST',
+                    body: JSON.stringify({ title, description })
+                });
+                
+                document.getElementById('student-issue-title').value = '';
+                document.getElementById('student-issue-description').value = '';
+                
+                showNotification('Issue submitted successfully! The coordinator will review it.', 'success');
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        });
+
+        // Faculty event listeners
+        facultyViewTimetable.addEventListener('click', async () => {
+            const sem = document.getElementById('faculty-sem').value;
+            facultyDashboard.classList.add('hidden');
+            facultyTimetablePage.classList.remove('hidden');
+            facultyTimetablePage.classList.add('active');
+            
+            try {
+                await populateFacultyTimetable(sem);
+                updateFacultyPageInfo();
+            } catch (error) {
+                console.error('Error loading faculty timetable:', error);
+                showNotification('Error loading faculty schedule', 'error');
+            }
+        });
+        
+        facultyViewStudentTimetable.addEventListener('click', () => {
+            const sem = document.getElementById('faculty-student-sem').value;
+            const section = document.getElementById('faculty-student-section').value;
+            facultyDashboard.classList.add('hidden');
+            facultyStudentTimetablePage.classList.remove('hidden');
+            facultyStudentTimetablePage.classList.add('active');
+            populateTimetable('student', 'faculty-student-timetable', sem, section);
+            updateFacultyPageInfo();
+        });
+        
+        facultyNotifications.addEventListener('click', () => {
+            facultyDashboard.classList.add('hidden');
+            facultyNotificationsPage.classList.remove('hidden');
+            facultyNotificationsPage.classList.add('active');
+            updateFacultyAnnouncements();
+            updateFacultyPageInfo();
+        });
+        
+        facultyDownloadTimetable.addEventListener('click', () => {
+            const sem = document.getElementById('faculty-download-sem').value;
+            downloadTimetablePDF('faculty', sem);
+        });
+        
+        facultyTimetableBack.addEventListener('click', () => {
+            facultyDashboard.classList.remove('hidden');
+            facultyTimetablePage.classList.add('hidden');
+            facultyTimetablePage.classList.remove('active');
+        });
+        
+        facultyStudentTimetableBack.addEventListener('click', () => {
+            facultyDashboard.classList.remove('hidden');
+            facultyStudentTimetablePage.classList.add('hidden');
+            facultyStudentTimetablePage.classList.remove('active');
+        });
+        
+        facultyNotificationsBack.addEventListener('click', () => {
+            facultyDashboard.classList.remove('hidden');
+            facultyNotificationsPage.classList.add('hidden');
+            facultyNotificationsPage.classList.remove('active');
+        });
+        
+        facultyDownloadBack.addEventListener('click', () => {
+            facultyDashboard.classList.remove('hidden');
+            facultyDownloadPage.classList.add('hidden');
+            facultyDownloadPage.classList.remove('active');
+        });
+        
+        facultyDownloadConfirm.addEventListener('click', () => {
+            showNotification('Schedule downloaded successfully!', 'success');
+        });
+        
+        // Faculty download student timetable
+        facultyDownloadStudentTimetable.addEventListener('click', () => {
+            const sem = document.getElementById('faculty-student-sem').value;
+            const section = document.getElementById('faculty-student-section').value;
+            downloadTimetablePDF('student', sem, section);
+        });
+        
+        facultySubmitIssue.addEventListener('click', async () => {
+            const title = document.getElementById('faculty-issue-title').value;
+            const description = document.getElementById('faculty-issue-description').value;
+            
+            if (!title || !description) {
+                showNotification('Please fill in both title and description.', 'error');
+                return;
+            }
+            
+            try {
+                await apiCall('/issues', {
+                    method: 'POST',
+                    body: JSON.stringify({ title, description })
+                });
+                
+                document.getElementById('faculty-issue-title').value = '';
+                document.getElementById('faculty-issue-description').value = '';
+                
+                showNotification('Issue submitted successfully! The coordinator will review it.', 'success');
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        });
+
+        // Coordinator event listeners
+        coordinatorUpload.addEventListener('click', () => {
+            coordinatorDashboard.classList.add('hidden');
+            coordinatorUploadPage.classList.remove('hidden');
+            coordinatorUploadPage.classList.add('active');
+            updateCoordinatorPageInfo();
+        });
+
+        coordinatorViewTimetable.addEventListener('click', () => {
+            const sem = document.getElementById('coordinator-view-sem').value;
+            const section = document.getElementById('coordinator-view-section').value;
+            coordinatorDashboard.classList.add('hidden');
+            coordinatorTimetablePage.classList.remove('hidden');
+            coordinatorTimetablePage.classList.add('active');
+            populateTimetable('coordinator', 'coordinator-timetable', sem, section);
+            updateCoordinatorPageInfo();
+        });
+        
+        coordinatorCheckConflicts.addEventListener('click', () => {
+            const sem = document.getElementById('coordinator-conflict-sem').value;
+            const section = document.getElementById('coordinator-conflict-section').value;
+            coordinatorDashboard.classList.add('hidden');
+            coordinatorConflictResolutionPage.classList.remove('hidden');
+            coordinatorConflictResolutionPage.classList.add('active');
+            checkConflicts(sem, section);
+            updateUserIssuesList();
+            updateCoordinatorPageInfo();
+        });
+
+        coordinatorModify.addEventListener('click', () => {
+            const sem = document.getElementById('coordinator-modify-sem').value;
+            const section = document.getElementById('coordinator-modify-section').value;
+            coordinatorDashboard.classList.add('hidden');
+            coordinatorModificationPage.classList.remove('hidden');
+            coordinatorModificationPage.classList.add('active');
+            populateTimetable('coordinator', 'modification-timetable', sem, section);
+            setupModificationTable();
+            updateCoordinatorPageInfo();
+        });
+
+        coordinatorAnnounce.addEventListener('click', () => {
+            const sem = document.getElementById('coordinator-announce-sem').value;
+            const section = document.getElementById('coordinator-announce-section').value;
+            coordinatorDashboard.classList.add('hidden');
+            coordinatorAnnouncementsPage.classList.remove('hidden');
+            coordinatorAnnouncementsPage.classList.add('active');
+            updateCoordinatorPageInfo();
+        });
+
+        coordinatorGenerate.addEventListener('click', () => {
+            coordinatorDashboard.classList.add('hidden');
+            coordinatorGenerationPage.classList.remove('hidden');
+            coordinatorGenerationPage.classList.add('active');
+            updateCoordinatorPageInfo();
+        });
+        
+        coordinatorUpdateContact.addEventListener('click', () => {
+            coordinatorDashboard.classList.add('hidden');
+            coordinatorContactPage.classList.remove('hidden');
+            coordinatorContactPage.classList.add('active');
+            populateContactForm();
+            updateCoordinatorPageInfo();
+        });
+
+        // Coordinator page back buttons
+        coordinatorUploadBack.addEventListener('click', () => {
+            coordinatorDashboard.classList.remove('hidden');
+            coordinatorUploadPage.classList.add('hidden');
+            coordinatorUploadPage.classList.remove('active');
+        });
+        
+        coordinatorTimetableBack.addEventListener('click', () => {
+            coordinatorDashboard.classList.remove('hidden');
+            coordinatorTimetablePage.classList.add('hidden');
+            coordinatorTimetablePage.classList.remove('active');
+        });
+        
+        coordinatorConflictBack.addEventListener('click', () => {
+            coordinatorDashboard.classList.remove('hidden');
+            coordinatorConflictResolutionPage.classList.add('hidden');
+            coordinatorConflictResolutionPage.classList.remove('active');
+        });
+        
+        coordinatorGenerationBack.addEventListener('click', () => {
+            coordinatorDashboard.classList.remove('hidden');
+            coordinatorGenerationPage.classList.add('hidden');
+            coordinatorGenerationPage.classList.remove('active');
+        });
+        
+        coordinatorModificationBack.addEventListener('click', () => {
+            coordinatorDashboard.classList.remove('hidden');
+            coordinatorModificationPage.classList.add('hidden');
+            coordinatorModificationPage.classList.remove('active');
+        });
+        
+        coordinatorAnnouncementsBack.addEventListener('click', () => {
+            coordinatorDashboard.classList.remove('hidden');
+            coordinatorAnnouncementsPage.classList.add('hidden');
+            coordinatorAnnouncementsPage.classList.remove('active');
+        });
+        
+        coordinatorContactBack.addEventListener('click', () => {
+            coordinatorDashboard.classList.remove('hidden');
+            coordinatorContactPage.classList.add('hidden');
+            coordinatorContactPage.classList.remove('active');
+        });
+
+        // Coordinator view options
+        viewOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                viewOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                
+                // Update timetable view based on selected option
+                const viewType = option.getAttribute('data-view');
+                const sem = document.getElementById('coordinator-view-sem').value;
+                const section = document.getElementById('coordinator-view-section').value;
+                
+                if (viewType === 'faculty') {
+                    populateTimetable('coordinator', 'coordinator-timetable', sem, section);
+                } else if (viewType === 'students') {
+                    populateTimetable('student', 'coordinator-timetable', sem, section);
+                }
+                
+                showNotification(`Switched to ${option.textContent}`, 'info');
+            });
+        });
+
+        coordinatorExportTimetable.addEventListener('click', () => {
+            showNotification('Timetable exported successfully!', 'success');
+        });
+
+        // Conflict resolution
+        applyResolution.addEventListener('click', () => {
+            showNotification('Conflict resolution applied successfully!', 'success');
+            coordinatorConflictResolutionPage.classList.add('hidden');
+            coordinatorConflictResolutionPage.classList.remove('active');
+            coordinatorDashboard.classList.remove('hidden');
+            timetableStatus.textContent = 'Resolved';
+            timetableStatus.className = 'timetable-status status-approved';
+        });
+
+        ignoreConflicts.addEventListener('click', () => {
+            showNotification('Conflicts ignored. Timetable may have scheduling issues.', 'warning');
+            coordinatorConflictResolutionPage.classList.add('hidden');
+            coordinatorConflictResolutionPage.classList.remove('active');
+            coordinatorDashboard.classList.remove('hidden');
+        });
+
+        // Timetable generation
+        startGeneration.addEventListener('click', async () => {
+            const priority = document.getElementById('generation-priority').value;
+            const maxHoursPerDay = document.getElementById('max-hours-per-day').value;
+            const breakDuration = document.getElementById('break-duration').value;
+
+            generationProgress.classList.remove('hidden');
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(async () => {
+                        try {
+                            const response = await apiCall('/generate-timetable', {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    priority,
+                                    maxHoursPerDay: parseInt(maxHoursPerDay),
+                                    breakDuration: parseInt(breakDuration)
+                                })
+                            });
+                            
+                            showNotification(response.message, 'success');
+                            generationProgress.classList.add('hidden');
+                            coordinatorGenerationPage.classList.add('hidden');
+                            coordinatorGenerationPage.classList.remove('active');
+                            coordinatorDashboard.classList.remove('hidden');
+                            timetableStatus.textContent = 'Generated';
+                            timetableStatus.className = 'timetable-status status-approved';
+                            generationStatus.textContent = `Generated ${response.generatedCount} timetables`;
+                            
+                            // Update data status
+                            updateDataStatus();
+                        } catch (error) {
+                            showNotification(error.message, 'error');
+                            generationProgress.classList.add('hidden');
+                        }
+                    }, 500);
+                }
+            }, 200);
+        });
+
+        // Timetable modification
+        applyModification.addEventListener('click', () => {
+            const newClass = document.getElementById('new-class').value;
+            if (!newClass) {
+                showNotification('Please enter a new class name.', 'error');
+                return;
+            }
+            
+            showNotification('Timetable modification applied successfully!', 'success');
+            document.getElementById('new-class').value = '';
+            document.getElementById('change-reason').value = '';
+        });
+
+        // Announcements
+        sendAnnouncement.addEventListener('click', async () => {
+            const title = document.getElementById('announcement-title').value;
+            const message = document.getElementById('announcement-message').value;
+            const audience = document.getElementById('announcement-audience').value;
+            
+            if (!title || !message) {
+                showNotification('Please fill in all fields.', 'error');
+                return;
+            }
+            
+            try {
+                await apiCall('/announcements', {
+                    method: 'POST',
+                    body: JSON.stringify({ title, message, audience })
+                });
+                
+                showNotification(`Announcement sent to ${audience}!`, 'success');
+                document.getElementById('announcement-title').value = '';
+                document.getElementById('announcement-message').value = '';
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        });
+        
+        // Contact details
+        saveContactDetails.addEventListener('click', async () => {
+            const name = document.getElementById('coordinator-name-input').value;
+            const phone = document.getElementById('coordinator-phone').value;
+            const email = document.getElementById('coordinator-email').value;
+            const office = document.getElementById('coordinator-office').value;
+            const hours = document.getElementById('coordinator-hours').value;
+            
+            if (!name || !phone || !email || !office || !hours) {
+                showNotification('All fields are required.', 'error');
+                return;
+            }
+            
+            try {
+                await apiCall('/contact-details', {
+                    method: 'PUT',
+                    body: JSON.stringify({ name, phone, email, office, hours })
+                });
+                
+                showNotification('Contact details updated successfully!', 'success');
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        });
+
+        // File upload functionality
+        browseFiles.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', handleFileUpload);
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('active');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('active');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('active');
+            
+            if (e.dataTransfer.files.length) {
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+
+        // API Helper Function
+        async function apiCall(endpoint, options = {}) {
+            const url = `${API_BASE_URL}${endpoint}`;
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                ...options
+            };
+
+            if (authToken) {
+                config.headers.Authorization = `Bearer ${authToken}`;
+            }
+
+            try {
+                const response = await fetch(url, config);
+                
+                // Handle network errors
+                if (!response.ok && response.status === 0) {
+                    throw new Error('Cannot connect to backend server. Please make sure the server is running on localhost:3000');
+                }
+                
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'API request failed');
+                }
+
+                return data;
+            } catch (error) {
+                console.error('API call failed:', error);
+                throw error;
+            }
+        }
+
+        // Functions
+        async function handleLogin() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (!username || !password) {
+                showNotification('Please enter both username and password.', 'error');
+                return;
+            }
+
+            try {
+                const response = await apiCall('/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ username, password })
+                });
+
+                authToken = response.token;
+                currentUser = response.user;
+                
+                showDashboard(currentUser.userType);
+                showNotification(`Welcome back, ${username}!`, 'success');
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
+
+        async function handleSignup() {
+            const username = document.getElementById('signup-username').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (!username || !email || !password || !confirmPassword) {
+                showNotification('Please fill in all fields.', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showNotification('Passwords do not match.', 'error');
+                return;
+            }
+            
+            if (!validateEmail(email)) {
+                showNotification('Please enter a valid email address.', 'error');
+                return;
+            }
+            
+            // Determine user type based on username prefix
+            let userType = '';
+            if (username.toUpperCase().startsWith('1JB')) {
+                userType = 'student';
+            } else if (username.toUpperCase().startsWith('FAC')) {
+                userType = 'faculty';
+            } else if (username.toUpperCase().startsWith('TTC')) {
+                userType = 'coordinator';
+            } else {
+                showNotification('Invalid username format. Username should start with 1JB, FAC, or TTC.', 'error');
+                return;
+            }
+
+            try {
+                const response = await apiCall('/register', {
+                    method: 'POST',
+                    body: JSON.stringify({ username, email, password, userType })
+                });
+
+                authToken = response.token;
+                currentUser = response.user;
+                
+                showNotification('Account created successfully!', 'success');
+                loginTab.click(); // Switch to login tab
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
+
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            authToken = null;
+            authContainer.classList.remove('hidden');
+            mainHeader.classList.add('hidden');
+            mainFooter.classList.add('hidden');
+            studentDashboard.classList.add('hidden');
+            facultyDashboard.classList.add('hidden');
+            coordinatorDashboard.classList.add('hidden');
+            contactPage.classList.add('hidden');
+            contactPage.classList.remove('active');
+            
+            // Hide all faculty pages
+            document.querySelectorAll('#faculty-dashboard ~ .page').forEach(page => {
+                page.classList.add('hidden');
+                page.classList.remove('active');
+            });
+            
+            // Hide all coordinator pages
+            document.querySelectorAll('#coordinator-dashboard ~ .page').forEach(page => {
+                page.classList.add('hidden');
+                page.classList.remove('active');
+            });
+            
+            showNotification('You have been logged out.', 'info');
+        }
+
+        function showDashboard(userType) {
+            authContainer.classList.add('hidden');
+            mainHeader.classList.remove('hidden');
+            mainFooter.classList.remove('hidden');
+            
+            if (userType === 'student') {
+                studentDashboard.classList.remove('hidden');
+                document.getElementById('student-name').textContent = currentUser.username;
+                document.getElementById('student-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+                // Update data for student
+                updateStudentData();
+            } else if (userType === 'faculty') {
+                facultyDashboard.classList.remove('hidden');
+                document.getElementById('faculty-name').textContent = currentUser.username;
+                document.getElementById('faculty-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+                updateFacultyData();
+            } else if (userType === 'coordinator') {
+                coordinatorDashboard.classList.remove('hidden');
+                document.getElementById('coordinator-name').textContent = currentUser.username;
+                document.getElementById('coordinator-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+                updateDataStatus();
+            }
+        }
+
+        async function updateStudentData() {
+            // In a real application, you would fetch student-specific data here
+            // For now, we'll just set placeholder values
+            document.getElementById('student-program').textContent = "Computer Science";
+        }
+
+        async function updateFacultyData() {
+            // In a real application, you would fetch faculty-specific data here
+            // For now, we'll just set placeholder values
+            document.getElementById('faculty-department').textContent = "Department of Computer Science";
+        }
+
+        async function updateDataStatus() {
+            try {
+                const response = await apiCall('/data-status');
+                const status = response.status;
+                
+                document.getElementById('subjects-status').querySelector('.status-count').textContent = status.subjects;
+                document.getElementById('faculty-status').querySelector('.status-count').textContent = status.faculty;
+                document.getElementById('rooms-status').querySelector('.status-count').textContent = status.rooms;
+                document.getElementById('students-status').querySelector('.status-count').textContent = status.students;
+                
+                // Update status item classes based on data availability
+                updateStatusItemClass(subjectsStatus, status.subjects);
+                updateStatusItemClass(facultyStatus, status.faculty);
+                updateStatusItemClass(roomsStatus, status.rooms);
+                updateStatusItemClass(studentsStatus, status.students);
+            } catch (error) {
+                console.error('Failed to fetch data status:', error);
+            }
+        }
+
+        function updateStatusItemClass(element, count) {
+            element.classList.remove('warning', 'success');
+            if (count === 0) {
+                element.classList.add('warning');
+            } else {
+                element.classList.add('success');
+            }
+        }
+
+        function updateFacultyPageInfo() {
+            document.getElementById('faculty-timetable-name').textContent = currentUser.username;
+            document.getElementById('faculty-timetable-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            document.getElementById('faculty-timetable-department').textContent = "Department of Computer Science";
+            
+            document.getElementById('faculty-student-timetable-name').textContent = currentUser.username;
+            document.getElementById('faculty-student-timetable-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            document.getElementById('faculty-student-timetable-department').textContent = "Department of Computer Science";
+            
+            document.getElementById('faculty-notifications-name').textContent = currentUser.username;
+            document.getElementById('faculty-notifications-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            document.getElementById('faculty-notifications-department').textContent = "Department of Computer Science";
+            
+            document.getElementById('faculty-download-name').textContent = currentUser.username;
+            document.getElementById('faculty-download-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            document.getElementById('faculty-download-department').textContent = "Department of Computer Science";
+        }
+
+        function updateCoordinatorPageInfo() {
+            document.getElementById('coordinator-upload-name').textContent = currentUser.username;
+            document.getElementById('coordinator-upload-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            document.getElementById('coordinator-timetable-name').textContent = currentUser.username;
+            document.getElementById('coordinator-timetable-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            document.getElementById('coordinator-student-timetable-name').textContent = currentUser.username;
+            document.getElementById('coordinator-student-timetable-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            document.getElementById('coordinator-conflict-name').textContent = currentUser.username;
+            document.getElementById('coordinator-conflict-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            document.getElementById('coordinator-generation-name').textContent = currentUser.username;
+            document.getElementById('coordinator-generation-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            document.getElementById('coordinator-modification-name').textContent = currentUser.username;
+            document.getElementById('coordinator-modification-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            document.getElementById('coordinator-announcements-name').textContent = currentUser.username;
+            document.getElementById('coordinator-announcements-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            document.getElementById('coordinator-contact-name').textContent = currentUser.username;
+            document.getElementById('coordinator-contact-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+        }
+
+        // Function to populate timetable with different views
+        async function populateTimetable(userType, tableId, sem = '', section = '') {
+            try {
+                const response = await apiCall(`/timetable/${userType}/${sem}/${section}`);
+                
+                // Check if we actually got timetable data
+                if (!response.timetable || response.timetable.length === 0) {
+                    console.warn('No timetable data received from server');
+                    
+                    // Create a sample timetable for demonstration
+                    const sampleTimetable = createSampleTimetable();
+                    displayTimetable(sampleTimetable, tableId, userType);
+                    
+                    showNotification('No timetable data found. Showing sample timetable.', 'info');
+                    return;
+                }
+                
+                displayTimetable(response.timetable, tableId, userType);
+            } catch (error) {
+                console.error('Failed to fetch timetable:', error);
+                
+                // Create fallback timetable
+                const fallbackTimetable = createSampleTimetable();
+                displayTimetable(fallbackTimetable, tableId, userType);
+                
+                showNotification('Could not load timetable. Showing sample data.', 'warning');
+            }
+        }
+
+        // Function to populate faculty-specific timetable
+        async function populateFacultyTimetable(sem = '') {
+            try {
+                const response = await apiCall(`/faculty-timetable/${sem}`);
+                displayTimetable(response.timetable, 'faculty-timetable', 'faculty');
+            } catch (error) {
+                console.error('Failed to fetch faculty timetable:', error);
+                const tableBody = document.querySelector('#faculty-timetable tbody');
+                tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center;">${error.message}</td></tr>`;
+            }
+        }
+
+        // Create sample timetable data for demonstration
+        function createSampleTimetable() {
+            const timeSlots = [
+                "8:30-9:30", "9:30-10:30", "10:30-10:45",
+                "10:45-11:45", "11:45-12:45", "12:45-1:30",
+                "1:30-2:30", "2:30-3:30", "3:30-4:30"
+            ];
+            
+            const sampleData = [];
+            
+            for (let i = 0; i < timeSlots.length; i++) {
+                const slot = timeSlots[i];
+                let monday, tuesday, wednesday, thursday, friday;
+                
+                if (slot === "10:30-10:45") {
+                    monday = tuesday = wednesday = thursday = friday = "Short Break";
+                } else if (slot === "12:45-1:30") {
+                    monday = tuesday = wednesday = thursday = friday = "Lunch Break";
+                } else {
+                    // Create realistic sample classes with batch information for labs
+                    const subjects = [
+                        "Mathematics - Dr. Smith (Room 101)",
+                        "Physics - Dr. Johnson (Room 102)", 
+                        "Chemistry - Dr. Brown (Room 103)",
+                        "LAB: Physics Lab - Dr. Johnson (Lab 1); Chemistry Lab - Dr. Brown (Lab 2); Computer Lab - Dr. Davis (Lab 3)",
+                        "English - Dr. Wilson (Room 104)",
+                        "Free Period"
+                    ];
+                    
+                    monday = subjects[i % subjects.length];
+                    tuesday = subjects[(i + 1) % subjects.length];
+                    wednesday = subjects[(i + 2) % subjects.length];
+                    thursday = subjects[(i + 3) % subjects.length];
+                    friday = subjects[(i + 4) % subjects.length];
+                }
+                
+                sampleData.push({
+                    time: slot,
+                    Monday: monday,
+                    Tuesday: tuesday,
+                    Wednesday: wednesday,
+                    Thursday: thursday,
+                    Friday: friday
+                });
+            }
+            
+            return sampleData;
+        }
+
+        // Display timetable in table
+        function displayTimetable(timetable, tableId, userType) {
+            const tableBody = document.querySelector(`#${tableId} tbody`);
+            tableBody.innerHTML = '';
+            
+            if (!timetable || timetable.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td colspan="6" style="text-align: center; padding: 20px;">No timetable data available</td>`;
+                tableBody.appendChild(tr);
+                return;
+            }
+            
+            timetable.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                // Different display based on user type
+                let monday, tuesday, wednesday, thursday, friday;
+                
+                if (userType === 'student') {
+                    // Student view: Only subject names
+                    monday = extractSubjectName(row.Monday);
+                    tuesday = extractSubjectName(row.Tuesday);
+                    wednesday = extractSubjectName(row.Wednesday);
+                    thursday = extractSubjectName(row.Thursday);
+                    friday = extractSubjectName(row.Friday);
+                } else if (userType === 'faculty') {
+                    // Faculty view: Subject + Room
+                    monday = extractSubjectAndRoom(row.Monday);
+                    tuesday = extractSubjectAndRoom(row.Tuesday);
+                    wednesday = extractSubjectAndRoom(row.Wednesday);
+                    thursday = extractSubjectAndRoom(row.Thursday);
+                    friday = extractSubjectAndRoom(row.Friday);
+                } else {
+                    // Coordinator view: Full details
+                    monday = row.Monday;
+                    tuesday = row.Tuesday;
+                    wednesday = row.Wednesday;
+                    thursday = row.Thursday;
+                    friday = row.Friday;
+                }
+                
+                tr.innerHTML = `
+                    <td>${row.time}</td>
+                    <td>${formatCellContent(monday)}</td>
+                    <td>${formatCellContent(tuesday)}</td>
+                    <td>${formatCellContent(wednesday)}</td>
+                    <td>${formatCellContent(thursday)}</td>
+                    <td>${formatCellContent(friday)}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Format cell content to handle batch information
+        function formatCellContent(content) {
+            if (!content || content === "Free Period" || content === "No Classes" || 
+                content === "Short Break" || content === "Lunch Break" || content === "Sports & Cultural Activities") {
+                return content;
+            }
+            
+            // Check if it's a lab with batch information
+            if (content.includes('LAB:')) {
+                const labContent = content.replace('LAB:', '').trim();
+                const labParts = labContent.split(';');
+                
+                let formattedContent = '<div><strong>LAB SESSIONS:</strong></div>';
+                labParts.forEach(part => {
+                    const trimmedPart = part.trim();
+                    // Extract batch information
+                    if (trimmedPart.includes('Batch')) {
+                        const batchMatch = trimmedPart.match(/Batch(\d+)/);
+                        if (batchMatch) {
+                            const batchNum = batchMatch[1];
+                            formattedContent += `<div class="lab-batch-info"><span class="batch-highlight">Batch ${batchNum}</span>: ${trimmedPart.replace(/Batch\d+/, '').trim()}</div>`;
+                        } else {
+                            formattedContent += `<div class="lab-batch-info">${trimmedPart}</div>`;
+                        }
+                    } else {
+                        formattedContent += `<div class="lab-batch-info">${trimmedPart}</div>`;
+                    }
+                });
+                
+                return formattedContent;
+            }
+            
+            return content;
+        }
+
+        // Helper function to extract only subject name
+        function extractSubjectName(classEntry) {
+            if (!classEntry || classEntry === "Free Period" || classEntry === "No Classes" || 
+                classEntry === "Short Break" || classEntry === "Lunch Break" || classEntry === "Sports & Cultural Activities") {
+                return classEntry;
+            }
+            
+            // Extract subject name (everything before the first dash)
+            const dashIndex = classEntry.indexOf(' - ');
+            if (dashIndex !== -1) {
+                return classEntry.substring(0, dashIndex);
+            }
+            
+            return classEntry;
+        }
+
+        // Helper function to extract subject and room
+        function extractSubjectAndRoom(classEntry) {
+            if (!classEntry || classEntry === "Free Period" || classEntry === "No Classes" || 
+                classEntry === "Short Break" || classEntry === "Lunch Break" || classEntry === "Sports & Cultural Activities") {
+                return classEntry;
+            }
+            
+            // Extract subject and room (everything before the first parenthesis)
+            const parenIndex = classEntry.indexOf(' (');
+            if (parenIndex !== -1) {
+                return classEntry.substring(0, parenIndex);
+            }
+            
+            return classEntry;
+        }
+
+        async function handleFileUpload(e) {
+            await handleFiles(e.target.files);
+        }
+
+        async function handleFiles(files) {
+            for (let file of files) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/upload`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error);
+                    }
+
+                    addUploadedFile(file.name, data.dataType);
+                    showNotification(data.message, 'success');
+                    
+                    // Update data status after upload
+                    if (currentUser && currentUser.userType === 'coordinator') {
+                        updateDataStatus();
+                    }
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                }
+            }
+        }
+
+        function addUploadedFile(filename, dataType) {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <div class="file-name">
+                    <i class="fas fa-file-csv"></i>
+                    <span>${filename} (${dataType})</span>
+                </div>
+                <div class="file-actions">
+                    <span style="color: var(--success); font-size: 14px;">Uploaded</span>
+                </div>
+            `;
+            
+            uploadedFiles.appendChild(fileItem);
+        }
+
+        async function checkConflicts(semester, section) {
+            try {
+                const response = await apiCall(`/check-conflicts/${semester}/${section}`);
+                displayConflicts(response.conflicts);
+            } catch (error) {
+                console.error('Failed to check conflicts:', error);
+                conflictList.innerHTML = '<p>Error checking conflicts</p>';
+            }
+        }
+
+        function displayConflicts(conflicts) {
+            conflictList.innerHTML = '';
+            
+            if (conflicts.length > 0) {
+                conflicts.forEach(conflict => {
+                    const conflictItem = document.createElement('div');
+                    conflictItem.className = 'conflict-item';
+                    conflictItem.innerHTML = `
+                        <strong>${conflict.type}:</strong> ${conflict.message}
+                    `;
+                    conflictList.appendChild(conflictItem);
+                });
+            } else {
+                conflictList.innerHTML = '<p>No conflicts found in the timetable.</p>';
+            }
+        }
+        
+        async function updateUserIssuesList() {
+            try {
+                const response = await apiCall('/issues');
+                displayUserIssues(response.issues);
+            } catch (error) {
+                console.error('Failed to fetch user issues:', error);
+                userIssuesList.innerHTML = '<p>Error loading user issues</p>';
+            }
+        }
+        
+        function displayUserIssues(issues) {
+            userIssuesList.innerHTML = '';
+            
+            if (issues.length > 0) {
+                issues.forEach(issue => {
+                    const issueItem = document.createElement('div');
+                    issueItem.className = 'issue-item';
+                    issueItem.innerHTML = `
+                        <div class="issue-meta">
+                            <span class="issue-user">${issue.user} (${issue.userType})</span>
+                            <span>${new Date(issue.date).toLocaleDateString()}</span>
+                        </div>
+                        <div class="announcement-title">${issue.title}</div>
+                        <div class="announcement-message">${issue.description}</div>
+                    `;
+                    userIssuesList.appendChild(issueItem);
+                });
+            } else {
+                userIssuesList.innerHTML = '<p>No user-reported issues.</p>';
+            }
+        }
+        
+        async function updateStudentAnnouncements() {
+            try {
+                const response = await apiCall('/announcements');
+                displayAnnouncements(response.announcements, 'student-announcement-list');
+            } catch (error) {
+                console.error('Failed to fetch announcements:', error);
+                studentAnnouncementList.innerHTML = '<p>Error loading announcements</p>';
+            }
+        }
+        
+        async function updateFacultyAnnouncements() {
+            try {
+                const response = await apiCall('/announcements');
+                displayAnnouncements(response.announcements, 'faculty-announcement-list');
+            } catch (error) {
+                console.error('Failed to fetch announcements:', error);
+                facultyAnnouncementList.innerHTML = '<p>Error loading announcements</p>';
+            }
+        }
+        
+        function displayAnnouncements(announcements, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            if (announcements.length > 0) {
+                announcements.forEach(announcement => {
+                    const announcementItem = document.createElement('div');
+                    announcementItem.className = 'announcement-item';
+                    announcementItem.innerHTML = `
+                        <div class="announcement-meta">${new Date(announcement.date).toLocaleDateString()}</div>
+                        <div class="announcement-title">${announcement.title}</div>
+                        <div class="announcement-message">${announcement.message}</div>
+                    `;
+                    container.appendChild(announcementItem);
+                });
+            } else {
+                container.innerHTML = '<p>No announcements at this time.</p>';
+            }
+        }
+        
+        async function updateContactDetails() {
+            try {
+                const response = await apiCall('/contact-details');
+                const contact = response.contactDetails;
+                
+                contactDetailsDiv.innerHTML = `
+                    <div class="contact-item">
+                        <i class="fas fa-user"></i>
+                        <span><strong>Name:</strong> ${contact.name}</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <span><strong>Phone:</strong> ${contact.phone}</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <span><strong>Email:</strong> ${contact.email}</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-building"></i>
+                        <span><strong>Office:</strong> ${contact.office}</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-clock"></i>
+                        <span><strong>Office Hours:</strong> ${contact.hours}</span>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Failed to fetch contact details:', error);
+                contactDetailsDiv.innerHTML = '<p>Error loading contact details</p>';
+            }
+        }
+        
+        async function populateContactForm() {
+            try {
+                const response = await apiCall('/contact-details');
+                const contact = response.contactDetails;
+                
+                document.getElementById('coordinator-name-input').value = contact.name;
+                document.getElementById('coordinator-phone').value = contact.phone;
+                document.getElementById('coordinator-email').value = contact.email;
+                document.getElementById('coordinator-office').value = contact.office;
+                document.getElementById('coordinator-hours').value = contact.hours;
+            } catch (error) {
+                console.error('Failed to fetch contact details:', error);
+            }
+        }
+
+        function setupModificationTable() {
+            const table = document.getElementById('modification-timetable');
+            const cells = table.querySelectorAll('td');
+            
+            cells.forEach(cell => {
+                if (cell.cellIndex > 0) { // Skip time column
+                    cell.style.cursor = 'pointer';
+                    cell.addEventListener('click', function() {
+                        const day = table.rows[0].cells[this.cellIndex].textContent;
+                        const time = table.rows[this.parentElement.rowIndex].cells[0].textContent;
+                        const currentClass = this.textContent;
+                        
+                        document.getElementById('change-day').value = day.toLowerCase();
+                        document.getElementById('change-time').value = time.replace(' - ', '-');
+                        document.getElementById('change-class').value = currentClass;
+                    });
+                }
+            });
+        }
+
+        function downloadTimetablePDF(userType, sem, section) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Add college logo and name
+            doc.setFontSize(20);
+            doc.setTextColor(40, 40, 40);
+            doc.text('SJB INSTITUTE OF TECHNOLOGY', 105, 15, { align: 'center' });
+            
+            doc.setFontSize(16);
+            doc.setTextColor(80, 80, 80);
+            
+            if (userType === 'faculty') {
+                doc.text('Faculty Teaching Schedule', 105, 25, { align: 'center' });
+                doc.setFontSize(12);
+                doc.text(`Semester: ${sem}`, 105, 32, { align: 'center' });
+            } else {
+                doc.text(`${userType.charAt(0).toUpperCase() + userType.slice(1)} Timetable`, 105, 25, { align: 'center' });
+                doc.setFontSize(12);
+                doc.text(`Semester: ${sem}, Section: ${section}`, 105, 32, { align: 'center' });
+            }
+            
+            // Get timetable data
+            let timetableData = [];
+            let tableId = '';
+            
+            if (userType === 'student') {
+                tableId = 'student-timetable';
+            } else if (userType === 'faculty') {
+                tableId = 'faculty-timetable';
+            } else {
+                tableId = 'coordinator-timetable';
+            }
+            
+            const table = document.getElementById(tableId);
+            if (table) {
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length >= 6) {
+                        timetableData.push({
+                            time: cells[0].textContent,
+                            Monday: cells[1].innerHTML,
+                            Tuesday: cells[2].innerHTML,
+                            Wednesday: cells[3].innerHTML,
+                            Thursday: cells[4].innerHTML,
+                            Friday: cells[5].innerHTML
+                        });
+                    }
+                });
+            }
+            
+            // Create table in PDF
+            if (timetableData.length > 0) {
+                const headers = [['Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']];
+                const data = timetableData.map(row => [
+                    row.time,
+                    stripHtml(row.Monday).substring(0, 30), // Limit length for PDF
+                    stripHtml(row.Tuesday).substring(0, 30),
+                    stripHtml(row.Wednesday).substring(0, 30),
+                    stripHtml(row.Thursday).substring(0, 30),
+                    stripHtml(row.Friday).substring(0, 30)
+                ]);
+                
+                doc.autoTable({
+                    head: headers,
+                    body: data,
+                    startY: 40,
+                    styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+                    alternateRowStyles: { fillColor: [245, 245, 245] },
+                    columnStyles: {
+                        0: { cellWidth: 25 },
+                        1: { cellWidth: 33 },
+                        2: { cellWidth: 33 },
+                        3: { cellWidth: 33 },
+                        4: { cellWidth: 33 },
+                        5: { cellWidth: 33 }
+                    }
+                });
+            } else {
+                // Fallback if no table data found
+                doc.setFontSize(10);
+                doc.text('Timetable data would be displayed here in a table format.', 20, 50);
+                doc.text('Please view the timetable in the application and use the print functionality.', 20, 60);
+            }
+            
+            // Save the PDF
+            let fileName = '';
+            if (userType === 'faculty') {
+                fileName = `faculty_schedule_sem${sem}.pdf`;
+            } else {
+                fileName = `${userType}_timetable_sem${sem}_section${section}.pdf`;
+            }
+            
+            doc.save(fileName);
+            
+            showNotification(`Timetable downloaded as ${fileName}`, 'success');
+        }
+
+        // Helper function to strip HTML tags for PDF display
+        function stripHtml(html) {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || '';
+        }
+
+        function showNotification(message, type) {
+            notification.className = `notification ${type}`;
+            notification.querySelector('.notification-message').textContent = message;
+            
+            // Set appropriate icon
+            const icon = notification.querySelector('.notification-icon');
+            if (type === 'success') {
+                icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+            } else if (type === 'error') {
+                icon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+            } else {
+                icon.innerHTML = '<i class="fas fa-info-circle"></i>';
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is already logged in (in a real app, this would check session)
+            // For now, we'll always show the login screen
+            console.log('Enhanced Timetable Automation System initialized');
+        });
+    </script>
+</body>
+</html>
