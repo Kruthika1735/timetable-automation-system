@@ -1,24 +1,24 @@
-# 📅 Timetable Automation System
+# Timetable Automation System
 
 A full-stack web application that automatically generates optimized academic timetables for students, faculty, and coordinators.
 
 ---
 
-## 🚀 Features
+## Features
 
-### 👨‍🎓 Student Dashboard
+### Student Dashboard
 
 * View timetable by semester & section
 * Download timetable as PDF
 * Report issues
 
-### 👨‍🏫 Faculty Dashboard
+### Faculty Dashboard
 
 * View teaching schedule
 * Access student timetables
 * Download schedules
 
-### 🧑‍💼 Coordinator Dashboard
+### Coordinator Dashboard
 
 * Upload subjects, faculty, rooms data (CSV)
 * Generate timetable automatically
@@ -27,7 +27,7 @@ A full-stack web application that automatically generates optimized academic tim
 
 ---
 
-## ⚙️ Smart Timetable Generation
+## Smart Timetable Generation
 
 * Lab allocation with batches
 * Faculty & room conflict avoidance
@@ -36,7 +36,7 @@ A full-stack web application that automatically generates optimized academic tim
 
 ---
 
-## 🧠 How It Works
+## How It Works
 
 The system uses a rule-based scheduling algorithm:
 
@@ -47,7 +47,7 @@ The system uses a rule-based scheduling algorithm:
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 * Frontend: HTML, CSS, JavaScript
 * Backend: Python (Flask)
@@ -55,7 +55,7 @@ The system uses a rule-based scheduling algorithm:
 
 ---
 
-## ⚙️ Setup
+## Setup
 
 ```bash
 pip install -r requirements.txt
